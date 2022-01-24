@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include "MyTools.h"
+#include "FileLoggerSingletone.h"
 
 #if defined(_WIN32) || defined(WIN32)
 #include <conio.h>
@@ -33,15 +34,15 @@ IScreen& getInternalInstance() {
 class ScreenSingletonProxy : public IScreen {
 public:
   virtual void ClrScr() override {
-    MyTools::WriteToLog("ClrScr invoke begin");
-    getInternalInstance().ClrScr();
-    MyTools::WriteToLog("ClrScr invoke end");
+      FileLoggerSingletoneProxy::getInstance().WriteToLog("ClrScr invoke begin");
+      getInternalInstance().ClrScr();
+      FileLoggerSingletoneProxy::getInstance().WriteToLog("ClrScr invoke end");
   }
   virtual void GotoXY(double x, double y) override {
 
-    MyTools::WriteToLog("GotoXY invoke begin");
-    getInternalInstance().GotoXY(x, y);
-    MyTools::WriteToLog("GotoXY invoke end");
+      FileLoggerSingletoneProxy::getInstance().WriteToLog("GotoXY invoke begin");
+      getInternalInstance().GotoXY(x, y);
+      FileLoggerSingletoneProxy::getInstance().WriteToLog("GotoXY invoke end");
   }
   virtual uint16_t GetMaxX() override {
     return getInternalInstance().GetMaxX();
