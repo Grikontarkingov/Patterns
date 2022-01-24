@@ -1,6 +1,8 @@
-﻿#include "SBomber.h"
+﻿#include <conio.h>
+#include "SBomber.h"
 #include "MyTools.h"
 #include "ScreenSingleton.h"
+#include "FileLoggerSingletone.h"
 
 #if defined(_WIN32) || defined(WIN32)
 
@@ -38,7 +40,7 @@ int _kbhit() {
 
 
 int main(void) {
-  MyTools::OpenLogFile("log.txt");
+  FileLoggerSingletoneProxy::getInstance().OpenLogFile("log.txt");
 
   SBomber game;
 
@@ -59,7 +61,7 @@ int main(void) {
 
   } while (!game.GetExitFlag());
 
-  MyTools::CloseLogFile();
+    FileLoggerSingletoneProxy::getInstance().CloseLogFile();
 
   return 0;
 }
