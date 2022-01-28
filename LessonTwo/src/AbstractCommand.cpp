@@ -1,5 +1,20 @@
 #include "AbstractCommand.h"
 
+IBomb* DropBombParent::CreateBomb() const{
+    MyTools::WriteToLog(std::string(__func__) + " was invoked");
+
+    double x = pPlane->GetX() + 4;
+    double y = pPlane->GetY() + 2;
+
+    IBomb* pBomb = new Bomb;
+    pBomb->SetDirection(0.3, 1);
+    pBomb->SetSpeed(2);
+    pBomb->SetPos(x, y);
+    pBomb->SetWidth(SMALL_CRATER_SIZE);
+
+    return pBomb;
+}
+
 DeleteDynamicObjCommand::DeleteDynamicObjCommand(std::vector<DynamicObject*>& vecDynamicObj, DynamicObject* pObj)
 : dynamicObj(vecDynamicObj), pDynamicObj(pObj) {}
 
@@ -27,39 +42,22 @@ void DeleteStaticObjCommand::Execute() const {
 }
 
 DropBombCommand::DropBombCommand(const Plane* plane, std::vector<DynamicObject*>& vecDynamicObj, int16_t& score)
-: pPlane(plane), dynamicObj(vecDynamicObj), m_score(score) {}
+: dynamicObj(vecDynamicObj), m_score(score) {
+    pPlane = plane;
+}
 
 void DropBombCommand::Execute() const {
-    MyTools::WriteToLog(std::string(__func__) + " was invoked");
-
-    double x = pPlane->GetX() + 4;
-    double y = pPlane->GetY() + 2;
-
-    IBomb* pBomb = new Bomb;
-    pBomb->SetDirection(0.3, 1);
-    pBomb->SetSpeed(2);
-    pBomb->SetPos(x, y);
-    pBomb->SetWidth(SMALL_CRATER_SIZE);
-
-    dynamicObj.push_back(pBomb);
+    dynamicObj.push_back(CreateBomb());
     m_score -= Bomb::BombCost;
 }
 
 DropNewBombCommand::DropNewBombCommand(const Plane* plane, std::vector<DynamicObject*>& vecDynamicObj, int16_t& score)
-: pPlane(plane), dynamicObj(vecDynamicObj), m_score(score) {}
+: dynamicObj(vecDynamicObj), m_score(score) {
+    pPlane = plane;
+}
 
 void DropNewBombCommand::Execute() const {
-    MyTools::WriteToLog(std::string(__func__) + " was invoked");
-
-    double x = pPlane->GetX() + 4;
-    double y = pPlane->GetY() + 2;
-
-    IBomb* pBomb = new Bomb;
-    pBomb->SetDirection(0.3, 1);
-    pBomb->SetSpeed(2);
-    pBomb->SetPos(x, y);
-    pBomb->SetWidth(SMALL_CRATER_SIZE);
-    IBomb* pBombDec = new BombDecorator(pBomb);
+    IBomb* pBombDec = new BombDecorator(CreateBomb());
 
     dynamicObj.push_back(pBombDec);
     m_score -= Bomb::BombCost;

@@ -23,7 +23,10 @@ public:
     void Execute() const override;
 
 private:
+    const Plane* pPlane;
+
     std::vector<DynamicObject*>& dynamicObj;
+
     std::unique_ptr<DynamicObject> pDynamicObj;
 };
 
@@ -38,29 +41,32 @@ private:
     std::unique_ptr<GameObject> pStaticObj;
 };
 
-class DropBombCommand : public AbstractCommand {
+class DropBombParent : public AbstractCommand{
+protected:
+    IBomb* CreateBomb() const;
+
+    const Plane* pPlane;
+};
+
+class DropBombCommand : public DropBombParent {
 public:
 DropBombCommand(const Plane* plane, std::vector<DynamicObject*>& vecDynamicObj, int16_t& score);
 
 void Execute() const override;
 
 private:
-    const Plane* pPlane;
-
     std::vector<DynamicObject*>& dynamicObj;
 
     int16_t& m_score;
 };
 
-class DropNewBombCommand : public AbstractCommand {
+class DropNewBombCommand : public DropBombParent {
 public:
     DropNewBombCommand(const Plane* plane, std::vector<DynamicObject*>& vecDynamicObj, int16_t& score);
 
     void Execute() const override;
 
 private:
-    const Plane* pPlane;
-
     std::vector<DynamicObject*>& dynamicObj;
 
     int16_t& m_score;
