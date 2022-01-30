@@ -23,8 +23,6 @@ public:
     void Execute() const override;
 
 private:
-    const Plane* pPlane;
-
     std::vector<DynamicObject*>& dynamicObj;
 
     std::unique_ptr<DynamicObject> pDynamicObj;
@@ -38,6 +36,7 @@ public:
 
 private:
     std::vector<GameObject*>& staticObj;
+
     std::unique_ptr<GameObject> pStaticObj;
 };
 

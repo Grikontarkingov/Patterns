@@ -6,13 +6,13 @@ IBomb* DropBombParent::CreateBomb() const{
     double x = pPlane->GetX() + 4;
     double y = pPlane->GetY() + 2;
 
-    IBomb* pBomb = new Bomb;
+    std::unique_ptr<IBomb> pBomb = std::make_unique<Bomb>();
     pBomb->SetDirection(0.3, 1);
     pBomb->SetSpeed(2);
     pBomb->SetPos(x, y);
     pBomb->SetWidth(SMALL_CRATER_SIZE);
 
-    return pBomb;
+    return pBomb.release();
 }
 
 DeleteDynamicObjCommand::DeleteDynamicObjCommand(std::vector<DynamicObject*>& vecDynamicObj, DynamicObject* pObj)
@@ -57,8 +57,8 @@ DropNewBombCommand::DropNewBombCommand(const Plane* plane, std::vector<DynamicOb
 }
 
 void DropNewBombCommand::Execute() const {
-    IBomb* pBombDec = new BombDecorator(CreateBomb());
+    std::unique_ptr<IBomb> pBombDec = std::make_unique<BombDecorator>(CreateBomb());
 
-    dynamicObj.push_back(pBombDec);
+    dynamicObj.push_back(pBombDec.release());
     m_score -= Bomb::BombCost;
 }
