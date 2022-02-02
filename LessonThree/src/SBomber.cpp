@@ -2,10 +2,13 @@
 #include "MyTools.h"
 #include "SBomber.h"
 #include "Bomb.h"
+#include "SBomberIterator.h"
 #include "Ground.h"
 #include "Tank.h"
+#include "TankAdapter.h"
 #include "House.h"
 #include "ScreenSingleton.h"
+#include "enums/CraterSize.h"
 #include <chrono>
 #include <thread>
 
@@ -38,15 +41,15 @@ SBomber::SBomber()
   pGr->SetWidth(width - 2);
   vecStaticObj.push_back(pGr);
 
-  Tank* pTank = new Tank;
-  pTank->SetWidth(13);
-  pTank->SetPos(30, groundY - 1);
-  vecStaticObj.push_back(pTank);
+  TankAdapter* pTankAdapter = new TankAdapter(new TankAdaptee);
+  pTankAdapter->SetWidth(13);
+  pTankAdapter->SetPos(30, groundY - 1);
+  vecStaticObj.push_back(pTankAdapter);
 
-  pTank = new Tank;
-  pTank->SetWidth(13);
-  pTank->SetPos(50, groundY - 1);
-  vecStaticObj.push_back(pTank);
+  pTankAdapter = new TankAdapter(new TankAdaptee);
+  pTankAdapter->SetWidth(13);
+  pTankAdapter->SetPos(50, groundY - 1);
+  vecStaticObj.push_back(pTankAdapter);
 
   House* pHouse = new House;
   pHouse->SetWidth(13);
@@ -101,20 +104,20 @@ void SBomber::CheckPlaneAndLevelGUI() {
 }
 
 void SBomber::CheckBombsAndGround() {
-  std::vector<IBomb*> vecBombs = FindAllBombs();
+  //std::vector<Bomb*> vecBombs = FindAllBombs();
   Ground* pGround = FindGround();
   const double y = pGround->GetY();
-  for (size_t i = 0; i < vecBombs.size(); i++) {
-    if (vecBombs[i]->GetY() >= y) {
-      pGround->AddCrater(vecBombs[i]->GetX());
-      CheckDestoyableObjects(vecBombs[i]);
-      std::unique_ptr<AbstractCommand> pCommand = std::make_unique<DeleteDynamicObjCommand>(vecDynamicObj, vecBombs[i]);
-      pCommand->Execute();
+  std::unique_ptr<ISBomberIterator<DynamicObject, Bomb>> bIt = std::make_unique<SBomberIterator<DynamicObject, Bomb>>(vecDynamicObj);
+  for (; !(bIt->isDone()); bIt->Next()) {
+    if (bIt->Get() != nullptr && bIt->Get()->GetY() >= y) {
+      pGround->AddCrater(bIt->Get()->GetX());
+      CheckDestoyableObjects(bIt->Get());
+      DeleteDynamicObj(bIt->Get());
     }
   }
 }
 
-void SBomber::CheckDestoyableObjects(IBomb* pBomb) {
+void SBomber::CheckDestoyableObjects(Bomb* pBomb) {
   std::vector<DestroyableGroundObject*> vecDestoyableObjects =
       FindDestoyableGroundObjects();
   const double size = pBomb->GetWidth();
@@ -124,13 +127,11 @@ void SBomber::CheckDestoyableObjects(IBomb* pBomb) {
     const double x2 = x1 + size;
     if (vecDestoyableObjects[i]->isInside(x1, x2)) {
       score += vecDestoyableObjects[i]->GetScore();
-        std::unique_ptr<AbstractCommand> pCommand = std::make_unique<DeleteStaticObjCommand>(vecStaticObj, vecDestoyableObjects[i]);
-        pCommand->Execute();
+      DeleteStaticObj(vecDestoyableObjects[i]);
     }
   }
 }
 
-/*
 void SBomber::DeleteDynamicObj(DynamicObject* pObj) {
   auto it = vecDynamicObj.begin();
   for (; it != vecDynamicObj.end(); it++) {
@@ -140,9 +141,8 @@ void SBomber::DeleteDynamicObj(DynamicObject* pObj) {
     }
   }
 }
-*/
 
-/*void SBomber::DeleteStaticObj(GameObject* pObj) {
+void SBomber::DeleteStaticObj(GameObject* pObj) {
   auto it = vecStaticObj.begin();
   for (; it != vecStaticObj.end(); it++) {
     if (*it == pObj) {
@@ -150,14 +150,14 @@ void SBomber::DeleteDynamicObj(DynamicObject* pObj) {
       break;
     }
   }
-}*/
+}
 
 std::vector<DestroyableGroundObject*> SBomber::FindDestoyableGroundObjects() const {
   std::vector<DestroyableGroundObject*> vec;
-  Tank* pTank;
+  TankAdapter* pTank;
   House* pHouse;
   for (size_t i = 0; i < vecStaticObj.size(); i++) {
-    pTank = dynamic_cast<Tank*>(vecStaticObj[i]);
+    pTank = dynamic_cast<TankAdapter*>(vecStaticObj[i]);
     if (pTank != nullptr) {
       vec.push_back(pTank);
       continue;
@@ -186,16 +186,14 @@ Ground* SBomber::FindGround() const {
   return nullptr;
 }
 
-std::vector<IBomb*> SBomber::FindAllBombs() const {
-  std::vector<IBomb*> vecBombs;
-
-  for (size_t i = 0; i < vecDynamicObj.size(); i++) {
-    IBomb* pBomb = dynamic_cast<IBomb*>(vecDynamicObj[i]);
-    if (pBomb != nullptr) {
-      vecBombs.push_back(pBomb);
-    }
+std::vector<Bomb*> SBomber::FindAllBombs() {
+  std::vector<Bomb*> vecBombs;
+  std::unique_ptr<ISBomberIterator<DynamicObject, Bomb>> bIt = std::make_unique<SBomberIterator<DynamicObject, Bomb>>(vecDynamicObj);
+  for(; !(bIt->isDone()); bIt->Next()){
+      if(bIt->Get() != nullptr){
+          vecBombs.push_back(bIt->Get());
+      }
   }
-
   return vecBombs;
 }
 
@@ -244,17 +242,13 @@ void SBomber::ProcessKBHit() {
       FindPlane()->ChangePlaneY(0.25);
       break;
 
-    case 'b': {
-        std::unique_ptr<AbstractCommand> pCommand = std::make_unique<DropBombCommand>(FindPlane(), vecDynamicObj, score);
-        CommandExecuter(pCommand.get());
-        break;
-    }
+    case 'b':
+      DropBomb();
+      break;
 
-    case 'B': {
-        std::unique_ptr<AbstractCommand> pCommand = std::make_unique<DropNewBombCommand>(FindPlane(), vecDynamicObj, score);
-        CommandExecuter(pCommand.get());
-        break;
-    }
+    case 'B':
+      DropBomb();
+      break;
 
     default:
       break;
@@ -297,14 +291,7 @@ void SBomber::TimeFinish() {
   MyTools::WriteToLog(std::string(__func__) + " deltaTime = ", (int)deltaTime);
 }
 
-void SBomber::CommandExecuter(AbstractCommand *pCommand) {
-    if(bombsNumber > 0) {
-        pCommand->Execute();
-        --bombsNumber;
-    }
-}
-
-/*void SBomber::DropBomb() {
+void SBomber::DropBomb() {
   if (bombsNumber > 0) {
     MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
@@ -322,4 +309,4 @@ void SBomber::CommandExecuter(AbstractCommand *pCommand) {
     bombsNumber--;
     score -= Bomb::BombCost;
   }
-}*/
+}
