@@ -5,18 +5,18 @@
 #include "CraterCommon.h"
 #include "CraterWinter.h"
 
-class CraterFactoryCreate {
+class ICraterFactory {
 public:
-    virtual ~CraterFactoryCreate() = default;
+    virtual ~ICraterFactory() = default;
     virtual AbstractCrater* CreateCrater(int x, int y, uint16_t widthN) = 0;
 };
 
-class CreateCraterCommon : public CraterFactoryCreate {
+class CraterCommonFactory : public ICraterFactory {
 public:
     AbstractCrater* CreateCrater(int x, int y, uint16_t widthN) override;
 };
 
-class CreateCraterWinter : public CraterFactoryCreate {
+class CraterWinterFactory : public ICraterFactory {
 public:
     AbstractCrater* CreateCrater(int x, int y, uint16_t widthN) override;
 };
