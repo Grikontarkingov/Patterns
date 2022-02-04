@@ -1,5 +1,4 @@
 #include "Ground.h"
-#include "CraterFactoryCreate.h"
 #include <cstring>
 
 bool Ground::isInsideAnyCrater(double x) const
@@ -19,5 +18,7 @@ bool Ground::isInsideAnyCrater(double x) const
 
 void Ground::AddCrater(double xn)
 {
-    vecCrates.push_back(CreateCrater(int(xn), y));
+    AbstractCrater* crater = CreateCrater();
+    crater->SetPos(xn, y);
+    vecCrates.push_back(crater);
 }

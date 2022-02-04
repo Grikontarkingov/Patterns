@@ -1,8 +1,8 @@
 #include <cstring>
 #include <iostream>
 #include "GroundCommon.h"
+#include "CraterCommon.h"
 #include "ScreenSingleton.h"
-#include "CraterFactoryCreate.h"
 #include "enums/CraterSize.h"
 
 void GroundCommon::Draw() const
@@ -46,11 +46,8 @@ void GroundCommon::Draw() const
     delete[] buf;
 }
 
-AbstractCrater* GroundCommon::CreateCrater(int x, int y) const {
-    CreateCraterCommon* creatCraterCommon = new CreateCraterCommon;
-
-    CraterFactoryCreate* createCraters;
-    createCraters = creatCraterCommon;
-
-    return createCraters->CreateCrater(x, y, SMALL_CRATER_SIZE);
+AbstractCrater* GroundCommon::CreateCrater() {
+    std::unique_ptr<AbstractCrater> craterCommon = std::make_unique<CraterCommon>();
+    craterCommon->SetWidth(SMALL_CRATER_SIZE);
+    return craterCommon.release();
 }

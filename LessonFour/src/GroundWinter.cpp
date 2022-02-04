@@ -1,8 +1,8 @@
-#include "GroundWinter.h"
 #include <cstring>
 #include <iostream>
+#include "GroundWinter.h"
+#include "CraterWinter.h"
 #include "ScreenSingleton.h"
-#include "CraterFactoryCreate.h"
 #include "enums/CraterSize.h"
 
 void GroundWinter::Draw() const
@@ -46,11 +46,8 @@ void GroundWinter::Draw() const
     delete[] buf;
 }
 
-AbstractCrater* GroundWinter::CreateCrater(int x, int y) const {
-    CreateCraterWinter* creatCraterWinter = new CreateCraterWinter;
-
-    CraterFactoryCreate* createCraters;
-    createCraters = creatCraterWinter;
-
-    return createCraters->CreateCrater(x, y, WINTER_CRATER_SIZE);
+AbstractCrater* GroundWinter::CreateCrater() {
+    std::unique_ptr<AbstractCrater> craterWinter = std::make_unique<CraterWinter>();
+    craterWinter->SetWidth(WINTER_CRATER_SIZE);
+    return craterWinter.release();
 }

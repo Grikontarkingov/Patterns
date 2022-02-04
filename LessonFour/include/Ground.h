@@ -1,8 +1,9 @@
 #pragma once
 
 #include "GameObject.h"
-#include "CraterCommon.h"
+#include "AbstractCrater.h"
 #include <vector>
+#include <memory>
 
 
 class Ground : public GameObject {
@@ -14,7 +15,7 @@ public:
 
   void AddCrater(double xn);
 
-  virtual AbstractCrater* CreateCrater(int x, int y) const = 0;
+  virtual AbstractCrater* CreateCrater() = 0;
 
 protected:
     bool isInsideAnyCrater(double x) const;
