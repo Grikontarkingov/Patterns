@@ -1,11 +1,13 @@
-#include "WinterGround.h"
 #include <cstring>
 #include <iostream>
+#include "GroundCommon.h"
 #include "ScreenSingleton.h"
+#include "CraterFactoryCreate.h"
+#include "enums/CraterSize.h"
 
-void WinterGround::Draw() const
+void GroundCommon::Draw() const
 {
-    ScreenSingleton::getInstance().SetColor(CC_Blue);
+    ScreenSingleton::getInstance().SetColor(CC_Green);
 
     const size_t bufSize = width + 1;
     char* buf = new (std::nothrow) char[bufSize];
@@ -42,4 +44,13 @@ void WinterGround::Draw() const
     }
 
     delete[] buf;
+}
+
+AbstractCrater* GroundCommon::CreateCrater(int x, int y) const {
+    CreateCraterCommon* creatCraterCommon = new CreateCraterCommon;
+
+    CraterFactoryCreate* createCraters;
+    createCraters = creatCraterCommon;
+
+    return createCraters->CreateCrater(x, y, SMALL_CRATER_SIZE);
 }

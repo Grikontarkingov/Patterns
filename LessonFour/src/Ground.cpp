@@ -1,6 +1,5 @@
 #include "Ground.h"
-#include "CreateCraters.h"
-#include "enums/CraterSize.h"
+#include "CraterFactoryCreate.h"
 #include <cstring>
 
 bool Ground::isInsideAnyCrater(double x) const
@@ -20,9 +19,5 @@ bool Ground::isInsideAnyCrater(double x) const
 
 void Ground::AddCrater(double xn)
 {
-    CreatCraterWinter* creatCraterWinter = new CreatCraterWinter;
-
-    CreateCraters* createCraters;
-    createCraters = creatCraterWinter;
-    vecCrates.push_back(createCraters->CreateCrater(int(xn), y, WINTER_CRATER_SIZE));
+    vecCrates.push_back(CreateCrater(int(xn), y));
 }

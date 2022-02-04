@@ -2,9 +2,9 @@
 
 #include "GameObject.h"
 
-class Craters : public GameObject{
+class AbstractCrater : public GameObject{
 public:
-    virtual ~Craters() = default;
+    virtual ~AbstractCrater() = default;
 
     virtual void Draw() const = 0;
     bool isInside(double xn) const;

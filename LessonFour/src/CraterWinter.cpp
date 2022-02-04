@@ -1,9 +1,9 @@
-#include "WinterCrater.h"
+#include "CraterWinter.h"
 #include "ScreenSingleton.h"
 #include <iostream>
 #include "enums/CraterSize.h"
 
-void WinterCrater::Draw() const {
+void CraterWinter::Draw() const {
     if (width == WINTER_CRATER_SIZE) {
         ScreenSingleton::getInstance().GotoXY(x - 4, y + 1);
         std::cout << "==     ==";
