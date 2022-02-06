@@ -46,8 +46,8 @@ void GroundWinter::Draw() const
     delete[] buf;
 }
 
-AbstractCrater* GroundWinter::CreateCrater() {
-    std::unique_ptr<AbstractCrater> craterWinter = std::make_unique<CraterWinter>();
+Crater* GroundWinter::CreateCrater() {
+    std::unique_ptr<Crater> craterWinter = std::make_unique<CraterWinter>();
     craterWinter->SetWidth(WINTER_CRATER_SIZE);
     return craterWinter.release();
 }

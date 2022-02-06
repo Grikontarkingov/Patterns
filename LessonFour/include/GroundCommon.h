@@ -4,6 +4,6 @@
 
 class GroundCommon : public Ground {
 public:
-    AbstractCrater* CreateCrater() override;
+    Crater* CreateCrater() override;
     void Draw() const override;
 };

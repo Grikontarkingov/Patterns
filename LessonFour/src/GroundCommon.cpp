@@ -46,8 +46,8 @@ void GroundCommon::Draw() const
     delete[] buf;
 }
 
-AbstractCrater* GroundCommon::CreateCrater() {
-    std::unique_ptr<AbstractCrater> craterCommon = std::make_unique<CraterCommon>();
+Crater* GroundCommon::CreateCrater() {
+    std::unique_ptr<Crater> craterCommon = std::make_unique<CraterCommon>();
     craterCommon->SetWidth(SMALL_CRATER_SIZE);
     return craterCommon.release();
 }

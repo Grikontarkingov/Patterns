@@ -1,8 +1,8 @@
 #pragma once
 
-#include "AbstractCrater.h"
+#include "Crater.h"
 
-class CraterWinter : public AbstractCrater{
+class CraterWinter : public Crater{
 public:
     void Draw() const override;
 };
