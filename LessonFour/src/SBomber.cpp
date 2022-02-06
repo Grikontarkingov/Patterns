@@ -15,7 +15,7 @@
 #include <thread>
 
 SBomber::SBomber(bool isPipe, bool OneOrTwoWindows)
-  : exitFlag(false), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
+  : exitFlag(false), m_isPipe(isPipe), m_OneOrTwoWindows(OneOrTwoWindows), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
     fps(0), bombsNumber(10), score(0) {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
