@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GameObject.h"
-#include "AbstractCrater.h"
+#include "Crater.h"
 #include <vector>
 #include <memory>
 
@@ -11,13 +11,11 @@ public:
   Ground() = default;
   virtual ~Ground() = default;
 
-  void Draw() const override = 0;
-
   void AddCrater(double xn);
 
-  virtual AbstractCrater* CreateCrater() = 0;
+  virtual Crater* CreateCrater() = 0;
 
 protected:
     bool isInsideAnyCrater(double x) const;
-    std::vector<AbstractCrater*> vecCrates;
+    std::vector<Crater*> vecCrates;
 };
