@@ -3,19 +3,16 @@
 #include "SBomber.h"
 #include "Bomb.h"
 #include "Ground.h"
-#include "GroundCommon.h"
-#include "GroundWinter.h"
 #include "Tank.h"
 #include "House.h"
 #include "ScreenSingleton.h"
-#include "HouseDirector.h"
-#include "IHouseBuilder.h"
 #include "enums/CraterSize.h"
 #include <chrono>
 #include <thread>
+#include "ILogVisitor.h"
 
-SBomber::SBomber(bool isPipe, bool OneOrTwoWindows)
-  : exitFlag(false), m_isPipe(isPipe), m_OneOrTwoWindows(OneOrTwoWindows), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
+SBomber::SBomber()
+  : exitFlag(false), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
     fps(0), bombsNumber(10), score(0) {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
@@ -37,7 +34,7 @@ SBomber::SBomber(bool isPipe, bool OneOrTwoWindows)
   pGUI->SetFinishX(offset + width - 4);
   vecStaticObj.push_back(pGUI);
 
-  Ground* pGr = new GroundWinter;
+  Ground* pGr = new Ground;
   const uint16_t groundY = maxY - 5;
   pGr->SetPos(offset + 1, groundY);
   pGr->SetWidth(width - 2);
@@ -48,33 +45,13 @@ SBomber::SBomber(bool isPipe, bool OneOrTwoWindows)
   pTank->SetPos(30, groundY - 1);
   vecStaticObj.push_back(pTank);
 
+
   pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(50, groundY - 1);
   vecStaticObj.push_back(pTank);
 
-  IHouseBuilder* pBuildHouse = new HouseBuilder;
-  std::unique_ptr<HouseDirector> houseDirector = std::make_unique<HouseDirector>();
-  houseDirector->SetBuilder(pBuildHouse);
-
-  if(m_isPipe){
-      if(OneOrTwoWindows){
-          houseDirector->BuildHouseWithPipeAndOneBigWindow();
-      }
-      else{
-          houseDirector->BuildHouseWithPipeAndTwoSmallWindows();
-      }
-  }
-  else{
-      if(OneOrTwoWindows){
-          houseDirector->BuildHouseWithOneBigWindow();
-      }
-      else{
-          houseDirector->BuildHouseWithTwoSmallWindows();
-      }
-  }
-
-  House* pHouse = pBuildHouse->GetHouse();
+  House* pHouse = new House;
   pHouse->SetWidth(13);
   pHouse->SetPos(80, groundY - 1);
   vecStaticObj.push_back(pHouse);
@@ -106,11 +83,16 @@ SBomber::~SBomber() {
 void SBomber::MoveObjects() {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
+  ILogVisitor* logVisitor = new LogVisitor;
+
   for (size_t i = 0; i < vecDynamicObj.size(); i++) {
     if (vecDynamicObj[i] != nullptr) {
-      vecDynamicObj[i]->Move(deltaTime);
+        vecDynamicObj[i]->Accept(*logVisitor);
+        vecDynamicObj[i]->Move(deltaTime);
+
     }
   }
+  delete logVisitor;
 };
 
 void SBomber::CheckObjects() {
@@ -133,23 +115,13 @@ void SBomber::CheckBombsAndGround() {
   for (size_t i = 0; i < vecBombs.size(); i++) {
     if (vecBombs[i]->GetY() >= y) {
       pGround->AddCrater(vecBombs[i]->GetX());
-      CheckDestoyableObjects(vecBombs[i]);
+      DestroyableGroundObject* obj = vecBombs[i]->CheckDestoyableObjects();
+      if(obj != nullptr){
+          score += obj->GetScore();
+          DeleteStaticObj(obj);
+      }
+      delete obj;
       DeleteDynamicObj(vecBombs[i]);
-    }
-  }
-}
-
-void SBomber::CheckDestoyableObjects(Bomb* pBomb) {
-  std::vector<DestroyableGroundObject*> vecDestoyableObjects =
-      FindDestoyableGroundObjects();
-  const double size = pBomb->GetWidth();
-  const double size_2 = size / 2;
-  for (size_t i = 0; i < vecDestoyableObjects.size(); i++) {
-    const double x1 = pBomb->GetX() - size_2;
-    const double x2 = x1 + size;
-    if (vecDestoyableObjects[i]->isInside(x1, x2)) {
-      score += vecDestoyableObjects[i]->GetScore();
-      DeleteStaticObj(vecDestoyableObjects[i]);
     }
   }
 }
@@ -328,6 +300,13 @@ void SBomber::DropBomb() {
     pBomb->SetSpeed(2);
     pBomb->SetPos(x, y);
     pBomb->SetWidth(SMALL_CRATER_SIZE);
+
+    for(auto& obj : vecStaticObj){
+        DestroyableGroundObject* destroyableGroundObject = dynamic_cast<DestroyableGroundObject*>(obj);
+        if(destroyableGroundObject != nullptr){
+            pBomb->AddObserver(destroyableGroundObject);
+        }
+    }
 
     vecDynamicObj.push_back(pBomb);
     bombsNumber--;
