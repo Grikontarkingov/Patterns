@@ -1,5 +1,6 @@
 
 #include "MyTools.h"
+#include "Mediator.h"
 #include "SBomber.h"
 #include "Bomb.h"
 #include "Ground.h"
@@ -8,15 +9,25 @@
 #include "ScreenSingleton.h"
 #include "enums/CraterSize.h"
 #include <chrono>
-#include <thread>
-#include "ILogVisitor.h"
+#include <random>
 
 SBomber::SBomber()
   : exitFlag(false), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
     fps(0), bombsNumber(10), score(0) {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
-  Plane* p = new Plane;
+    std::random_device rd;
+    std::mt19937 mersenne(rd());
+    uint16_t typeOfPlane = mersenne() % 2 + 1;
+
+    Plane* p;
+    if(typeOfPlane == 1) {
+        p = new ColorPlane;
+    }
+    else{
+        p = new BigPlane;
+    }
+
   p->SetDirection(1, 0.1);
   p->SetSpeed(4);
   p->SetPos(5, 10);
@@ -34,6 +45,9 @@ SBomber::SBomber()
   pGUI->SetFinishX(offset + width - 4);
   vecStaticObj.push_back(pGUI);
 
+  Mediator* pMediator = new Mediator(pGUI);
+  //Tank::SetStaticMediator(pMediator);
+
   Ground* pGr = new Ground;
   const uint16_t groundY = maxY - 5;
   pGr->SetPos(offset + 1, groundY);
@@ -43,12 +57,13 @@ SBomber::SBomber()
   Tank* pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(30, groundY - 1);
+  pTank->SetStaticMediator(pMediator);
   vecStaticObj.push_back(pTank);
-
 
   pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(50, groundY - 1);
+  pTank->SetStaticMediator(pMediator);
   vecStaticObj.push_back(pTank);
 
   House* pHouse = new House;
@@ -83,16 +98,11 @@ SBomber::~SBomber() {
 void SBomber::MoveObjects() {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
-  ILogVisitor* logVisitor = new LogVisitor;
-
   for (size_t i = 0; i < vecDynamicObj.size(); i++) {
     if (vecDynamicObj[i] != nullptr) {
-        vecDynamicObj[i]->Accept(*logVisitor);
-        vecDynamicObj[i]->Move(deltaTime);
-
+      vecDynamicObj[i]->Move(deltaTime);
     }
   }
-  delete logVisitor;
 };
 
 void SBomber::CheckObjects() {
@@ -115,13 +125,23 @@ void SBomber::CheckBombsAndGround() {
   for (size_t i = 0; i < vecBombs.size(); i++) {
     if (vecBombs[i]->GetY() >= y) {
       pGround->AddCrater(vecBombs[i]->GetX());
-      DestroyableGroundObject* obj = vecBombs[i]->CheckDestoyableObjects();
-      if(obj != nullptr){
-          score += obj->GetScore();
-          DeleteStaticObj(obj);
-      }
-      delete obj;
+      CheckDestoyableObjects(vecBombs[i]);
       DeleteDynamicObj(vecBombs[i]);
+    }
+  }
+}
+
+void SBomber::CheckDestoyableObjects(Bomb* pBomb) {
+  std::vector<DestroyableGroundObject*> vecDestoyableObjects =
+      FindDestoyableGroundObjects();
+  const double size = pBomb->GetWidth();
+  const double size_2 = size / 2;
+  for (size_t i = 0; i < vecDestoyableObjects.size(); i++) {
+    const double x1 = pBomb->GetX() - size_2;
+    const double x2 = x1 + size;
+    if (vecDestoyableObjects[i]->isInside(x1, x2)) {
+      score += vecDestoyableObjects[i]->GetScore();
+      DeleteStaticObj(vecDestoyableObjects[i]);
     }
   }
 }
@@ -300,13 +320,6 @@ void SBomber::DropBomb() {
     pBomb->SetSpeed(2);
     pBomb->SetPos(x, y);
     pBomb->SetWidth(SMALL_CRATER_SIZE);
-
-    for(auto& obj : vecStaticObj){
-        DestroyableGroundObject* destroyableGroundObject = dynamic_cast<DestroyableGroundObject*>(obj);
-        if(destroyableGroundObject != nullptr){
-            pBomb->AddObserver(destroyableGroundObject);
-        }
-    }
 
     vecDynamicObj.push_back(pBomb);
     bombsNumber--;
