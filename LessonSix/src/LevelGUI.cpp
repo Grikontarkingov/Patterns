@@ -59,7 +59,7 @@ void  LevelGUI::SetParam(uint64_t passedTimeNew, uint64_t fpsNew, uint16_t bombs
 }
 
 void LevelGUI::AddMessage(std::string message) {
-    queMessages.push(message);
+    queMessages.push(std::move(message));
 }
 
 bool LevelGUI::CheckTimer() {

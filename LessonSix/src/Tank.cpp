@@ -11,10 +11,10 @@ using namespace std;
 using namespace MyTools;
 
 Tank::Tank() {
-    vecSomeMessages.push_back("We all gonna die!");
-    vecSomeMessages.push_back("Shoot down the plane!");
-    vecSomeMessages.push_back("What a quiet day today...");
-    vecSomeMessages.push_back("Planes don't exist!");
+    vecAllMessagesOfTank.push_back("We all gonna die!");
+    vecAllMessagesOfTank.push_back("Shoot down the plane!");
+    vecAllMessagesOfTank.push_back("What a quiet day today...");
+    vecAllMessagesOfTank.push_back("Planes don't exist!");
 }
 
 bool Tank::isInside(double x1, double x2) const
@@ -53,7 +53,7 @@ void Tank::Draw()
 	cout << " ###########";
 
     if(GetRandomNumber(10) == 0){
-        pMediator->SetMessagesInQueue(GetMessages());
+        pMediator->SetMessageInQueue(GetMessage());
     }
 }
 
@@ -61,8 +61,8 @@ void Tank::SetStaticMediator(Mediator* mediator) {
     pMediator = mediator;
 }
 
-std::string Tank::GetMessages() const{
-    return vecSomeMessages[GetRandomNumber(vecSomeMessages.size())];
+std::string Tank::GetMessage() const{
+    return vecAllMessagesOfTank[GetRandomNumber(vecAllMessagesOfTank.size())];
 }
 
 

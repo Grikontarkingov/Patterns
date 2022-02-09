@@ -21,12 +21,12 @@ public:
     void SetStaticMediator(Mediator* mediator);
 
 private:
-    std::string GetMessages() const;
+    std::string GetMessage() const;
     uint16_t GetRandomNumber(uint16_t upper) const;
 
     Mediator* pMediator;
 
-    std::vector<std::string> vecSomeMessages;
+    std::vector<std::string> vecAllMessagesOfTank;
 
 	const uint16_t score = 30;
 };
