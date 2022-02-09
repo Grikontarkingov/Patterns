@@ -18,15 +18,15 @@ public:
 
 	void Draw() override;
 
-    void SetStaticMediator(Mediator* mediator);
+    /*static */void SetMediator(Mediator* mediator);
 
 private:
-    std::string GetMessage() const;
+    std::string GetRandomMessage() const;
     uint16_t GetRandomNumber(uint16_t upper) const;
 
-    Mediator* pMediator;
+    /*static */Mediator* pMediator;
 
-    std::vector<std::string> vecAllMessagesOfTank;
+    std::vector<std::string> allMessages;
 
 	const uint16_t score = 30;
 };

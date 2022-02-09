@@ -46,7 +46,7 @@ SBomber::SBomber()
   vecStaticObj.push_back(pGUI);
 
   Mediator* pMediator = new Mediator(pGUI);
-  //Tank::SetStaticMediator(pMediator);
+  //Tank::SetMediator(pMediator);
 
   Ground* pGr = new Ground;
   const uint16_t groundY = maxY - 5;
@@ -57,13 +57,13 @@ SBomber::SBomber()
   Tank* pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(30, groundY - 1);
-  pTank->SetStaticMediator(pMediator);
+  pTank->SetMediator(pMediator);
   vecStaticObj.push_back(pTank);
 
   pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(50, groundY - 1);
-  pTank->SetStaticMediator(pMediator);
+  pTank->SetMediator(pMediator);
   vecStaticObj.push_back(pTank);
 
   House* pHouse = new House;
