@@ -2,8 +2,6 @@
 #include <iostream>
 #include "FileLogger.h"
 
-std::ofstream FileLogger::logger = nullptr;
-
 FileLogger::FileLogger(const std::string& fileName) {
     logger.open(fileName);
     if (logger.is_open()) {

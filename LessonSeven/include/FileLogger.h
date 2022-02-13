@@ -7,16 +7,16 @@ public:
     explicit FileLogger(const std::string& fileName);
     ~FileLogger();
 
-    static void WriteToLog(const std::string &str);
+    void WriteToLog(const std::string &str);
 
-    static void WriteToLog(const std::string &str, int n);
+    void WriteToLog(const std::string &str, int n);
 
-    static void WriteToLog(const std::string &str, double d);
+    void WriteToLog(const std::string &str, double d);
 
 private:
-    static std::string GetCurDateTime();
+    std::string GetCurDateTime();
 
-    static std::ofstream logger;
+    std::ofstream logger;
 };
 
 

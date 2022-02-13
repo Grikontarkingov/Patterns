@@ -1,14 +1,16 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 class SBomberImpl;
+class FileLogger;
 
 class SBomber
 {
 public:
 
-    SBomber();
+    explicit SBomber(FileLogger* fileLogger);
     ~SBomber();
     
     bool GetExitFlag() const;
@@ -21,6 +23,8 @@ public:
     void MoveObjects();
     void CheckObjects();
 
-private:
-    SBomberImpl* sBomber;
+private:;
+
+    std::unique_ptr<SBomberImpl> sBomberImpl;
+    FileLogger* logger;
 };

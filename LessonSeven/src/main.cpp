@@ -41,7 +41,7 @@ int _kbhit() {
 int main(void) {
     FileLogger logger("log.txt");
 
-  SBomber game;
+  SBomber game(&logger);
 
   do {
     game.TimeStart();
