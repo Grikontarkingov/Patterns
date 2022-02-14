@@ -10,13 +10,6 @@
 using namespace std;
 using namespace MyTools;
 
-Tank::Tank() {
-    allMessages.push_back("We all gonna die!");
-    allMessages.push_back("Shoot down the plane!");
-    allMessages.push_back("What a quiet day today...");
-    allMessages.push_back("Planes don't exist!");
-}
-
 bool Tank::isInside(double x1, double x2) const
 {
 	const double XBeg = x + 2;
