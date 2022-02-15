@@ -22,12 +22,11 @@ public:
 
     void Draw() override;
 
-    void AddMessage(std::string message);
+    void AddMessage(uint16_t x, uint16_t y, std::string_view message);
 
 private:
     bool CheckTimer();
 
-    std::queue<std::string> queMessages;
     uint16_t height;
     uint16_t finishX = 109;
 
@@ -35,6 +34,14 @@ private:
     uint16_t bombsNumber;
     int16_t score;
     uint16_t m_timer;
+
+    struct Message {
+        uint16_t x;
+        uint16_t y;
+        std::string text;
+    };
+
+    std::queue<Message> queMessages;
 };
 
 

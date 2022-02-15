@@ -40,9 +40,9 @@ void LevelGUI::Draw()
     std::cout << "Score: " << score;
 
     if(!queMessages.empty()){
-        ScreenSingleton::getInstance().GotoXY(5, 25);
+        ScreenSingleton::getInstance().GotoXY(queMessages.front().x, queMessages.front().y);
         ScreenSingleton::getInstance().SetColor(CC_Red);
-        std::cout << queMessages.front();
+        std::cout << queMessages.front().text;
 
         if(CheckTimer()){
             queMessages.pop();
@@ -58,8 +58,8 @@ void  LevelGUI::SetParam(uint64_t passedTimeNew, uint64_t fpsNew, uint16_t bombs
     score = scoreNew;
 }
 
-void LevelGUI::AddMessage(std::string message) {
-    queMessages.push(std::move(message));
+void LevelGUI::AddMessage(uint16_t x, uint16_t y, std::string_view message) {
+    queMessages.push(Message{x, y, std::string{message}});
 }
 
 bool LevelGUI::CheckTimer() {
@@ -67,7 +67,7 @@ bool LevelGUI::CheckTimer() {
         m_timer = static_cast<int>(passedTime / 1000.0);
         return false;
     }
-    else if((static_cast<int>(passedTime / 1000.0) - m_timer) >= 3){
+    else if((static_cast<int>(passedTime / 1000.0) - m_timer) >= 2){
         m_timer = 0;
         return true;
     }

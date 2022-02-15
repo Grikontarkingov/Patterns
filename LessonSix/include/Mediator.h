@@ -8,7 +8,7 @@ class Mediator {
 public:
     explicit Mediator(LevelGUI* levelGUI);
 
-    void AddMessageInQueue(std::string message);
+    void AddMessageInQueue(uint16_t x, uint16_t y, std::string_view message);
 
 private:
     LevelGUI* pLevelGUI;

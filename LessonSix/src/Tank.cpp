@@ -46,7 +46,7 @@ void Tank::Draw()
 	cout << " ###########";
 
     if(GetRandomNumber(10) == 0){
-        pMediator->AddMessageInQueue(GetRandomMessage());
+        pMediator->AddMessageInQueue(x - 4, y - 5, GetRandomMessage());
     }
 }
 
