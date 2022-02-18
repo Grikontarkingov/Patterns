@@ -376,18 +376,16 @@ size_t SBomber::GetRandomIndex(uint16_t upper){
 }
 
 bool SBomber::IsEmpty (double x1, double x2) {
-    bool isEmpty = true;
-
     for(auto& obj : vecStaticObj){
         DestroyableGroundObject* isObj = dynamic_cast<DestroyableGroundObject*>(obj);
         if(isObj != nullptr) {
             if(isObj->isInside(x1, x2)){
-                isEmpty = false;
+                return false;
             }
         }
     }
 
-    return isEmpty;
+    return true;
 }
 
 const char* SBomber::ppScroll[ScrollHeight] =
