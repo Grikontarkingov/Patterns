@@ -1,14 +1,26 @@
 
 #include <iostream>
-#include <random>
 
 #include "Tank.h"
 #include "MyTools.h"
 #include "ScreenSingleton.h"
-#include "Mediator.h"
 
 using namespace std;
 using namespace MyTools;
+
+Tank::Tank(const Tank& house) {
+    this->x = house.x;
+    this->y = house.y;
+    this->width = house.width;
+}
+
+DestroyableGroundObject* Tank::Clone() {
+    return new Tank(*this);
+}
+
+void Tank::SetX(double nx) {
+    x = nx;
+}
 
 bool Tank::isInside(double x1, double x2) const
 {
@@ -33,7 +45,7 @@ bool Tank::isInside(double x1, double x2) const
 	return false;
 }
 
-void Tank::Draw()
+void Tank::Draw() const
 {
 	ScreenSingleton::getInstance().SetColor(CC_Cyan);
 	ScreenSingleton::getInstance().GotoXY(x, y - 3);
@@ -44,26 +56,4 @@ void Tank::Draw()
 	cout << "    #####";
 	ScreenSingleton::getInstance().GotoXY(x,y);
 	cout << " ###########";
-
-    if(GetRandomNumber(10) == 0){
-        pMediator->AddMessageInQueue(x - 4, y - 5, GetRandomMessage());
-    }
-}
-
-//Mediator* Tank::pMediator = nullptr;
-
-void Tank::SetMediator(Mediator* mediator) {
-    pMediator = mediator;
-}
-
-std::string Tank::GetRandomMessage() const{
-    return allMessages[GetRandomNumber(allMessages.size())];
-}
-
-
-uint16_t Tank::GetRandomNumber(uint16_t upper) const {
-    std::random_device rd;
-    std::mt19937 mersenne(rd());
-
-    return static_cast<uint16_t>(mersenne() % upper + 0);
 }

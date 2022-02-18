@@ -1,6 +1,5 @@
 
 #include "MyTools.h"
-#include "Mediator.h"
 #include "SBomber.h"
 #include "Bomb.h"
 #include "Ground.h"
@@ -9,25 +8,17 @@
 #include "ScreenSingleton.h"
 #include "enums/CraterSize.h"
 #include <chrono>
+#include <thread>
 #include <random>
+#include <conio.h>
+#include <iostream>
 
 SBomber::SBomber()
   : exitFlag(false), startTime(0), finishTime(0), deltaTime(0), passedTime(0),
     fps(0), bombsNumber(10), score(0) {
   MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
-    std::random_device rd;
-    std::mt19937 mersenne(rd());
-    uint16_t typeOfPlane = mersenne() % 2 + 1;
-
-    Plane* p;
-    if(typeOfPlane == 1) {
-        p = new ColorPlane;
-    }
-    else{
-        p = new BigPlane;
-    }
-
+  Plane* p = new Plane;
   p->SetDirection(1, 0.1);
   p->SetSpeed(4);
   p->SetPos(5, 10);
@@ -45,9 +36,6 @@ SBomber::SBomber()
   pGUI->SetFinishX(offset + width - 4);
   vecStaticObj.push_back(pGUI);
 
-  Mediator* pMediator = new Mediator(pGUI);
-  //Tank::SetMediator(pMediator);
-
   Ground* pGr = new Ground;
   const uint16_t groundY = maxY - 5;
   pGr->SetPos(offset + 1, groundY);
@@ -57,13 +45,11 @@ SBomber::SBomber()
   Tank* pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(30, groundY - 1);
-  pTank->SetMediator(pMediator);
   vecStaticObj.push_back(pTank);
 
   pTank = new Tank;
   pTank->SetWidth(13);
   pTank->SetPos(50, groundY - 1);
-  pTank->SetMediator(pMediator);
   vecStaticObj.push_back(pTank);
 
   House* pHouse = new House;
@@ -266,6 +252,20 @@ void SBomber::ProcessKBHit() {
       DropBomb();
       break;
 
+      case 'd':
+          DropBombWithClone();
+          break;
+      case 'D':
+          DropBombWithClone();
+          break;
+
+      case 's':
+          CloneDestroyableGroundObject();
+          break;
+      case 'S':
+          CloneDestroyableGroundObject();
+          break;
+
     default:
       break;
   }
@@ -309,20 +309,146 @@ void SBomber::TimeFinish() {
 
 void SBomber::DropBomb() {
   if (bombsNumber > 0) {
+    vecDynamicObj.push_back(CreateBomb());
+  }
+}
+
+void SBomber::DropBombWithClone() {
+    if (bombsNumber > 1) {
+        vecDynamicObj.push_back(CreateBomb());
+        vecDynamicObj.push_back(vecDynamicObj.back()->Clone());
+    }
+}
+
+Bomb* SBomber::CreateBomb() {
     MyTools::WriteToLog(std::string(__func__) + " was invoked");
 
-    Plane* pPlane = FindPlane();
+    Plane *pPlane = FindPlane();
     double x = pPlane->GetX() + 4;
     double y = pPlane->GetY() + 2;
 
-    Bomb* pBomb = new Bomb;
+    Bomb *pBomb = new Bomb;
     pBomb->SetDirection(0.3, 1);
     pBomb->SetSpeed(2);
     pBomb->SetPos(x, y);
     pBomb->SetWidth(SMALL_CRATER_SIZE);
 
-    vecDynamicObj.push_back(pBomb);
     bombsNumber--;
     score -= Bomb::BombCost;
-  }
+
+    return pBomb;
+}
+
+void SBomber::CloneDestroyableGroundObject() {
+    std::vector<DestroyableGroundObject*> destroyableGroundObject = FindDestoyableGroundObjects();
+    DestroyableGroundObject* cloneDestroyableGroundObject;
+
+    const size_t randomIndex = GetRandomIndex(destroyableGroundObject.size() - 1);
+    cloneDestroyableGroundObject = destroyableGroundObject[randomIndex]->Clone();
+
+    const double size = cloneDestroyableGroundObject->GetWidth();
+    const double size_2 = size / 2;
+
+    const size_t maxX = static_cast<size_t> (ScreenSingleton::getInstance().GetMaxX() - size_2);
+    size_t i = ceil(size_2);
+
+    for(; i < maxX; ++i) {
+        cloneDestroyableGroundObject->SetX(i);
+
+        const double x1 = cloneDestroyableGroundObject->GetX() - size_2;
+        const double x2 = x1 + size;
+
+        if(IsEmpty(x1, x2)){
+            vecStaticObj.push_back(cloneDestroyableGroundObject);
+            return;
+        }
+
+    }
+
+    delete cloneDestroyableGroundObject;
+
+}
+
+size_t SBomber::GetRandomIndex(uint16_t upper){
+    std::default_random_engine generator;
+    std::uniform_int_distribution<size_t> randomIndex(0, upper);
+    return randomIndex(generator);
+}
+
+bool SBomber::IsEmpty (double x1, double x2) {
+    bool isEmpty = true;
+
+    for(auto& obj : vecStaticObj){
+        DestroyableGroundObject* isObj = dynamic_cast<DestroyableGroundObject*>(obj);
+        if(isObj != nullptr) {
+            if(isObj->isInside(x1, x2)){
+                isEmpty = false;
+            }
+        }
+    }
+
+    return isEmpty;
+}
+
+const char* SBomber::ppScroll[ScrollHeight] =
+        {"                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "  Project manager:        	",
+         " 	 Ivan Vasilevich      	",
+         "                          	",
+         "  Developers:             	",
+         " 	 Nikolay Gavrilov     	",
+         " 	 Dmitriy Sidelnikov   	",
+         " 	 Eva Brown            	",
+         "                          	",
+         "  Designers:              	",
+         " 	 Anna Pachenkova      	",
+         " 	 Elena Shvaiber       	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	",
+         "                          	"};
+
+void SBomber::AnimateScrolling()
+{
+    MyTools::WriteToLog(std::string(__FUNCTION__) + " was invoked");
+    const size_t windowHeight = 10; // Размер окна для скроллинга
+    const size_t startX = ScreenSingleton::getInstance().GetMaxX() / 2 - ScrollWidth / 2;
+    const size_t startY = ScreenSingleton::getInstance().GetMaxY() / 2 - windowHeight / 2;
+    double curPos = 0;
+    do {
+        TimeStart();
+        ScreenSingleton::getInstance().ClrScr();
+
+        int beginIndex = static_cast<int>(curPos);
+        int offset = 0;
+        ScreenSingleton::getInstance().GotoXY(startX, startY + offset);
+
+        for(;beginIndex < static_cast<int>(curPos + windowHeight); ++beginIndex){
+            ++offset;
+            std::cout << ppScroll[beginIndex];
+            ScreenSingleton::getInstance().GotoXY(startX, startY + offset);
+        }
+
+        // вывод windowHeight строк из ppScroll используя смещение curPos
+        // ...
+        ScreenSingleton::getInstance().GotoXY(0, 0);
+        TimeFinish();
+        curPos += deltaTime * 0.0015;
+
+    } while (!_kbhit() && int(curPos) <= (ScrollHeight - windowHeight));
+    ScreenSingleton::getInstance().ClrScr();
 }
